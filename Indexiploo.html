@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Device Information Lookup</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 20px;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    #result {
+      margin-top: 20px;
+      font-size: 18px;
+      text-align: left;
+    }
+    table {
+      margin-top: 20px;
+      width: 100%;
+      border-collapse: collapse;
+    }
+    th, td {
+      padding: 10px;
+      text-align: left;
+      border-bottom: 1px solid #ddd;
+    }
+    th {
+      background-color: #f2f2f2;
+    }
+  </style>
+</head>
+<body>
+  <h1>Device Information Lookup</h1>
+  <button onclick="lookupDeviceInformation()">Click to get your device information</button>
+  <div id="result"></div>
+
+  <script>
+    function lookupDeviceInformation() {
+      // Get the user's IP address
+      fetch('https://api.ipify.org?format=json')
+        .then(response => response.json())
+        .then(data => {
+          const ipAddress = data.ip;
+
+          // Get the user's device name, type, and browser information
+          const userAgent = navigator.userAgent;
+          let deviceName, deviceType, browserName, browserVersion;
+          if (userAgent.includes('Mobile') || userAgent.includes('Android')) {
+            deviceType = 'Mobile';
+            if (userAgent.includes('Android')) {
+              deviceName = 'Android Device';
+            } else if (userAgent.includes('iPhone')) {
+              deviceName = 'iPhone';
+            } else if (userAgent.includes('iPad')) {
+              deviceName = 'iPad';
+            } else {
+              deviceName = 'Unknown Mobile Device';
+            }
+          } else if (userAgent.includes('Windows')) {
+            deviceType = 'Desktop';
+            deviceName = 'Windows Device';
+          } else if (userAgent.includes('Mac')) {
+            deviceType = 'Desktop';
+            deviceName = 'Mac Device';
+          } else {
+            deviceType = 'Unknown';
+            deviceName = 'Unknown Device';
+          }
+
+          if (userAgent.includes('Chrome')) {
+            browserName = 'Google Chrome';
+            browserVersion = userAgent.substring(userAgent.indexOf('Chrome/') + 7);
+            browserVersion = browserVersion.substring(0, browserVersion.indexOf(' '));
+          } else if (userAgent.includes('Firefox')) {
+            browserName = 'Mozilla Firefox';
+            browserVersion = userAgent.substring(userAgent.indexOf('Firefox/') + 8);
+          } else if (userAgent.includes('Safari')) {
+            browserName = 'Apple Safari';
+            browserVersion = userAgent.substring(userAgent.indexOf('Version/') + 8);
+          } else if (userAgent.includes('Edge')) {
+            browserName = 'Microsoft Edge';
+            browserVersion = userAgent.substring(userAgent.indexOf('Edge/') + 5);
+          } else {
+            browserName = 'Unknown';
+            browserVersion = 'Unknown';
+          }
+
+          // Use a third-party API to get information about the IP address
+          fetch(`https://ipinfo.io/${ipAddress}/json`)
+            .then(response => response.json())
+            .then(data => {
+              const company = data.org;
+              const location = `${data.city}, ${data.region}, ${data.country}`;
+              const result = `
+                <table>
+                  <tr>
+                    <th>IP Address:</th>
+                    <td>${ipAddress}</td>
+                  </tr>
+                  <tr>
+                    <th>Device Type:</th>
+                    <td>${deviceType}</td>
+                  </tr>
+                  <tr>
+                    <th>Device Name:</th>
+                    <td>${deviceName}</td>
+                  </tr>
+                  <tr>
+                    <th>Browser Name:</th>
+                    <td>${browserName}</td>
+                  </tr>
+                  <tr>
+                    <th>Browser Version:</th>
+                    <td>${browserVersion}</td>
+                  </tr>
+                  <tr>
+                    <th>Company:</th>
+                    <td>${company}</td>
+                  </tr>
+                  <tr>
+                    <th>Location:</th>
+                    <td>${location}</td>
+                  </tr>
+                  <tr>
+                    <th>City:</th>
+                    <td>${data.city}</td>
+                  </tr>
+                  <tr>
+                    <th>State/Region:</th>
+                    <td>${data.region}</td>
+                  </tr>
+                  <tr>
+                    <th>Postal/Zip Code:</th>
+                    <td>${data.postal}</td>
+                  </tr>
+                  <tr>
+                    <th>Country Name:</th>
+                    <td>${data.country}</td>
+                  </tr>
+                  <tr>
+                    <th>Internet Service Provider (ISP):</th>
+                    <td>${data.org}</td>
+                  </tr>
+                  <tr>
+                    <th>Time Zone:</th>
+                    <td>${data.timezone}</td>
+                  </tr>
+                </table>
+              `;
+              document.getElementById('result').innerHTML = result;
+            })
+            .catch(error => {
+              console.error('Error:', error);
+              document.getElementById('result').innerHTML = 'An error occurred while looking up the IP address information.';
+            });
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          document.getElementById('result').innerHTML = 'An error occurred while getting the IP address.';
+        });
+    }
+  </script>
+</body>
+</html> 
